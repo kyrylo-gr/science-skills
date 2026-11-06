@@ -6,5 +6,10 @@
     "url": "https://github.com/kyrylo-gr"
   },
   "repository": "https://github.com/kyrylo-gr/physics-skills",
-  "keywords": ["physics", "research", "skills"]
+  "keywords": [
+    "physics",
+    "research",
+    "skills"
+  ],
+  "license": "MIT"
 }

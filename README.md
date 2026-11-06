@@ -55,3 +55,7 @@ To enable the commit hook in your clone:
 ```bash
 git config core.hooksPath .githooks
 ```
+
+## License
+
+[MIT](LICENSE)
