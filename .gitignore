@@ -1,0 +1,30 @@
+# OS and editors
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Local Claude Code state (keep .claude/settings.json)
+.claude/settings.local.json
+.claude/worktrees/
+
+# Build outputs and large generated media from running skills
+explainer-work/
+renders/
+snaps/
+*.mp4
+*.wav
+*.onnx

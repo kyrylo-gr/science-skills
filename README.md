@@ -1,6 +1,6 @@
 # physics-skills
 
-A library of [Claude Code](https://code.claude.com) skills for physics research, packaged as a plugin marketplace so it can be installed with two commands.
+This is my personal collection of [Claude Code](https://code.claude.com) skills for physics research. It is packaged as a plugin marketplace so I can install the same skills on every machine, and so anyone else can try them.
 
 ## Install
 
@@ -26,16 +26,16 @@ Auto-update is off by default. It can be switched on under `/plugin` → Marketp
 
 ## Skills
 
-Every skill is one folder under `skills/`, with a `SKILL.md` at its root. Once the plugin is installed a skill is invoked as `/physics-skills:<skill-name>`.
+Once the plugin is installed a skill is invoked as `/physics-skills:<skill-name>`.
 
-| Skill | What it does |
-|---|---|
-| `report-to-explainer-video` | Turns a report, paper or notes into an animated, narrated explainer video (MP4) using kokoro-onnx for the voice and HyperFrames for the animation. |
+### `report-to-explainer-video`
+
+Turns a report, paper or set of notes into an animated, narrated explainer video (MP4) in the spirit of 3Blue1Brown, with a kokoro-onnx voice and HyperFrames animation. It asks for the target length first, sizes the script to it, builds every visual from a library of predefined shapes synced to the spoken words, and gates each frame with a geometry checker before rendering.
 
 ## Adding a skill
 
 1. Create `skills/<skill-name>/SKILL.md` with YAML frontmatter (`name`, `description`) followed by the instructions. Supporting scripts and assets go in the same folder.
-2. Add a row to the table above.
+2. Add a section for it under "Skills" above, two sentences long.
 3. Run `claude plugin validate .` and commit.
 
 No manifest edits are needed: the plugin picks up every folder under `skills/`.
