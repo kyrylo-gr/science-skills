@@ -1,0 +1,17 @@
+{
+  "name": "physics-skills",
+  "description": "Kyrylo Gerashchenko's library of Claude Code skills for physics research: reports, figures, explainer videos and more.",
+  "owner": {
+    "name": "Kyrylo Gerashchenko",
+    "url": "https://github.com/kyrylo-gr"
+  },
+  "plugins": [
+    {
+      "name": "physics-skills",
+      "source": "./",
+      "description": "All skills in this library as one plugin. Each skill is a folder under skills/.",
+      "category": "productivity",
+      "tags": ["physics", "research", "skills"]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+<template id="explain-template">
+<div data-composition-id="explain" data-width="1920" data-height="1080"
+     style="width:1920px;height:1080px;background:#0f1117;position:relative;font-family:Inter">
+  <style>.s-eq{font-family:"EB Garamond",serif}</style>  <!-- name equation fonts here so HyperFrames embeds them -->
+  <svg id="x-svg" width="1920" height="1080" style="position:absolute;inset:0"></svg>
+  <script>
+  (() => {                                       // IIFE: scenes must not leak consts into each other
+    const C = S.cues(0), sc = S.scene("#x-svg"), tl = gsap.timeline({ paused: true });   // S.cues(host data-start)
+    const q  = sc.box({ x: 240, y: 200, w: 520, h: 300, label: "Qubit", sub: "two levels" });
+    const d  = sc.circle({ cx: 1380, cy: 350, r: 140, label: "Drive", tone: "blue" });
+    const ar = sc.arrow(d, q, { label: "microwave", wave: true, tone: "blue" });   // edge to edge, sized to the shapes
+    const ax = sc.axes({ x: 300, y: 600, w: 760, h: 300, xr: [0, 4 * Math.PI], yr: [0, 1.4], ticks: { y: 0.5 }, xlabel: "t", ylabel: "P" });
+    const cu = sc.plot(ax, (t) => Math.sin(t / 2) ** 2, { tone: "line" });        // exact maths
+    const dot = sc.dot({ cx: cu.pts[0][0], cy: cu.pts[0][1] });
+    const pk = sc.mark(ax, Math.PI, cu, { label: "π pulse", guides: "x" });
+    const eq = sc.eq({ x: 1320, y: 760, size: 64, parts: [["P", "P(t)"], " = ", ["s", "sin²"], "(", ["om", "Ω"], "t/2)"] });
+
+    A.in(tl, q, C.qubit);                        // outline draws on, then fill + label
+    A.in(tl, d, C.drive - 0.9);
+    A.in(tl, ar, C.drive - 0.6);                 // head lands ON the word "drive"
+    A.in(tl, ax, C.osc - 0.5);
+    A.in(tl, cu, C.osc, { d: C.vo3_end - C.osc });        // curve and tracer share at + d → dot rides the tip
+    A.trace(tl, dot, cu, C.osc, { d: C.vo3_end - C.osc });
+    A.terms(tl, eq, [["P", C.eq], ["s", C.eq + 0.5], ["om", C.eq + 1]]);
+    A.tint(tl, [eq.t.om, cu], C.eq + 1.4, { tone: "accent" });   // same colour = same idea
+    A.in(tl, pk, C.peak);
+    A.flash(tl, pk, C.peak + 0.4);
+    window.__timelines["explain"] = tl;          // register LAST
+  })();
+  </script>
+</div>
+</template>
