@@ -10,7 +10,7 @@ Makes a 1920×1080 explainer in the spirit of 3Blue1Brown: the picture does the 
 Three things are non-negotiable:
 
 1. **Ask the length first** (section 0). Everything else — number of ideas, beats, scenes — is sized from it.
-2. **It must look impressive and explain through motion.** Every beat changes the picture. Shapes come from the predefined library `shapes.js` (section 7), never hand-placed arrows.
+2. **It is organised like a good conference talk and explains through plots** (section 3). It covers every idea in the report, with no hooks: context first, one conclusion per scene, explicit links or explicit changes of part, scaling laws and magnitudes on the plots, each scene introduced from the previous picture, and motion only where something changes. Shapes come from the predefined library `shapes.js` (section 7), never hand-placed arrows.
 3. **Every frame passes the geometry gate** `check_layout.py` (section 8) before any snapshot or render: arrows start and end on the edges they claim, are sized to the shapes they join, nothing overlaps by accident.
 
 If the `hyperframes` skill (and `/hyperframes-cli`, `/media-use`) is available, load it too: its contract and work loop apply. The rules below are the subset this workflow depends on, plus what was learned getting it to run in a sandbox.
@@ -30,6 +30,8 @@ Size the video from the answer. Kokoro at speed 1.0 speaks about 2.6 words/s inc
 | 1 min | ~140 | 7–9 | 1 (+ one consequence) | 1–2 |
 | 2 min | ~290 | 14–18 | 2–3 | 2–3 |
 | 3–5 min | 430–720 | 22–40 | 3–5 | 3–6, one per idea |
+
+The Ideas column is how many ideas get full treatment at that length. The video still covers every idea in the report (section 3, rule 1): the others get one or two beats each. If even that cannot fit, keep every idea, exceed the target, and say so in the delivery note.
 
 After narrate.py prints the total, compare it with the target: more than ±15 % off → cut or add beats, not speed (`--speed` stays within 0.95–1.05).
 
@@ -66,7 +68,7 @@ Sandbox fixes (Claude Cowork cloud workspace and similar locked-down machines):
 
 ## 2. Read the source, pick the ideas, choose the register
 
-- Read the report (`pdftotext -layout file.pdf -` for PDFs, or the Read tool). Pick as many ideas as the length table allows — the one result or mechanism a newcomer should leave with first.
+- Read the report (`pdftotext -layout file.pdf -` for PDFs, or the Read tool). List every idea in the report: each section, result, mechanism and conclusion. All of them go into the video; you may reorder, merge and reword them, but not drop any (section 3, rule 1). The length table only decides how deep each one goes.
 - Every claim, number and equation must trace to the report. Do not invent values; mark anything illustrative as illustrative. Check the science of each step before animating it: a beautiful wrong diagram is worse than none.
 
 **Popular register** (general audience): illustrations first. Concrete objects (a drawn atom, a pendulum, a coin, a city map), metaphors made visible, at most one equation in the whole video and only if it is famous or very short. Numbers appear as comparisons ("as long as a football pitch"), not units.
@@ -79,33 +81,80 @@ Sandbox fixes (Claude Cowork cloud workspace and similar locked-down machines):
 
 Mixed audiences: scientific structure, popular pictures — keep the main equation, lead with the analogy.
 
-## 3. Visual direction: make it impressive, explain with motion
+## 3. Narrative and visual explanation
 
-Design the pictures together with the words (section 4), never as decoration added after the narration. Per scene: one diagram that grows (one part per beat), a worked example travelling through the steps, or a continuous transformation. Never bullet slides, icon rows, or a whole diagram dropped at once.
+The video is organised like a good talk at a physics conference, given to people in the same research community: not a popular-science video and not a TED talk. There are no hooks, teasers or rhetorical questions, neither at the start nor at the start of a section. The audience should get the intuition, always know where the talk is going, follow the flow, and understand each conclusion. Pacing is calm and deliberate.
 
-- **Something meaningful moves in every beat**; no stretch longer than ~3 s with nothing moving. If a beat is pure narration, use `A.drift` (slow push-in) or a pulse on what is being discussed.
-- **Motion carries meaning**: arrows grow in the direction of cause → effect; curves draw left→right with a tracer dot riding the tip; quantities that change are animated, not swapped; a transformation morphs (move/scale), not cut.
-- **Build up, then clear**: a scene accumulates at most ~7 objects; then fade the scaffolding (`A.out`) and keep only what the next idea needs. Scene changes are motivated transitions (zoom into a part, slide the diagram aside), not hard cuts.
-- **Hierarchy**: one focal element per beat, in the accent colour; the rest in `line`/`dim`. One colour per concept for the whole video (the same quantity is always the same colour in the plot, the diagram and the equation).
-- **Composition**: use the frame — the main diagram fills about 60 % of it; generous spacing between shapes (an arrow between two shapes needs at least ~120 px of room); align to a grid (multiples of 20 px); joined shapes of similar size.
-- **Polish**: dark ground, soft glow on tracer dots, rounded strokes, eased entrances (`power3.out`, `back.out` for pops), staggered labels. Text is minimal: labels and the equation, never narration sentences.
-- **Longer videos** (≥ 2 min): give each idea its own scene composition, open with a 3–5 s visual hook (the most striking frame of the video, animated), and close with a recap frame that reassembles the key pictures together.
+Two bodies of advice are used, for different things:
+
+- **The narrative** (order, conclusions, links between scenes) follows advice on conference talks and seminars: Alon, Mermin, Halmos, Peyton Jones, Doumont, Alley's assertion–evidence slides, and APS guidance for contributed talks.
+- **The visual explanation** (what to draw, which plot, how it moves) follows explanation-first channels such as 3Blue1Brown, Welch Labs and Mathologer, and Mayer's research on learning from narrated animation. Their narrative devices, such as hooks, question-and-answer loops and cliffhangers, are not used.
+
+Design the narrative and the pictures together with the words (section 4). The reviewer checks the storyboard against every numbered rule.
+
+### Narrative: organised like a conference talk
+
+1. **Cover the whole report.** The storyboard header lists every idea in the report: each section, result, mechanism and conclusion. Every one of them is explained in some scene. Ideas may be reordered, merged or reworded for clarity, but none is dropped. The target length decides how deep each idea goes, not whether it appears.
+2. **Context first, for the right audience.** Assume the audience knows the general field but not the specific physics or details of this report. The first scene therefore gives that context briefly: the physical system, the problem the report addresses, and what is needed to follow it. No hook, teaser, anecdote or rhetorical question: the first beat names the system, and the picture starts explaining from that beat.
+3. **A plan for reports with several parts.** When the report has several parts, a compact plan of them (short labels, or a small version of each part's key picture) appears on screen after the context. A short spoken preview is welcome while the plan is on screen. The general rule: nothing is ever spoken without the relevant picture on screen.
+4. **Short methods.** Only what is needed to trust the results: at most one scene in videos under about 3 min.
+5. **One conclusion per scene.** The scene's conclusion line is a declarative physics claim of about 25 words or fewer, never a label such as "Results" or "Setup". It is spoken in the scene, by the last beat at the latest, while the picture shows its evidence. Two conclusions mean two scenes.
+6. **Conclusion or lead.** Each scene's last beat either states the scene's conclusion, or, when the conclusion needs the next scene, says explicitly what that next step is and why it is needed.
+7. **Link only what is linked.** When a scene follows logically from an earlier conclusion, its first beat says how: therefore, but, to test this, this implies, this constrains. When the report moves to an unrelated part, do not invent a link: say plainly that this part is done and the talk moves to the next one, and bring the plan back with that part highlighted. "Next" alone is never a logical link, but a plain, explicit change of part is fine.
+8. **Summary test.** Read in order, the conclusion lines alone summarise the whole report, with no idea missing and no gap within a part.
+9. **Tell, show, restate.** Each result is said, shown with its evidence, and restated in the conclusion line.
+10. **Level.** Scientific register: no beat explains general textbook material of the field, but the report-specific physics is explained in full. Popular register: same structure, but name and picture the key background before it is used. In both, every term is defined when it is first spoken, and at most one new idea enters per beat.
+11. **Close on the conclusions.** The last scene restates the conclusions of every part, in words that match the earlier conclusion lines, adds no new data, and gives the report's outlook briefly if it has one. The last frame shows the conclusions and holds long enough to read them.
+12. **Plain spoken style.** Say "we", use short sentences, never read like a paper abstract, no hype, and claim nothing beyond the report.
+
+### Visual explanation: what to draw and how
+
+13. **Prefer plots.** Any claim that one quantity depends on another, or that one thing exceeds another, is shown as a plot, not only said or written as an equation. Otherwise use one diagram that grows, a worked example travelling through the steps, or a continuous transformation. Never bullet slides, icon rows, or a whole diagram dropped at once. Redraw figures from the report for the screen; never paste them.
+14. **Read the plot before using it.** In the beat where a plot appears, the narration names both axes, with quantity and scale. The next beat points to the one feature that matters (a peak, a slope, a crossing, a scaling), and the last storyboard column names it.
+15. **Build plots in steps**, one beat each: axes, then one curve, then the feature or comparison the scene's conclusion is about.
+16. **Compare on shared axes.** Theory and experiment, or two conditions, share axes in one panel with direct labels, uncertainty is shown or mentioned, and agreement or deviation is stated in numbers. To vary a parameter, morph one curve on fixed axes (`A.morph`) or use small multiples with shared scales.
+17. **Give the scaling and the orders of magnitude.** Whenever a claim says that changing x changes y, show how y depends on x: the simplified dependence on screen next to the plot (y ∝ x², y ≈ a/x, y ∝ e^(−x/x₀)), and the orders of magnitude of x and y in the report's regime, as real values on the axis ticks or as short labels such as "~10 µs". Values come from the report; simplified forms are marked with ∝ or ≈.
+18. **Picture before formalism.** An equation comes after its physical picture, at most one per scene, and its simplified form is preferred unless the full expression is itself a main result of the report. Each symbol is defined in speech and coloured like its visual counterpart (`A.tint`), and the equation's meaning is said in words. No derivation chains on screen.
+19. **Sanity check.** Each model or derived result gets a limiting case, toy model or known regime, animated on its plot, in videos of 2 min and longer, and in shorter ones when the result is central.
+20. **Show a thing when it is named.** An object or quantity appears or is highlighted on the cue of the word that names it, not before or after.
+21. **Every motion represents something.** Arrows grow from cause to effect; curves draw left to right with a tracer dot on the tip; changing quantities are animated, not swapped; transformations morph instead of cutting. No decorative motion: no drift, pulse or glow that does not point at what is being explained.
+22. **One thing moves at a time, then holds.** Within a beat only the element being explained moves. Once a scene's conclusion has been spoken, nothing new enters before the next beat begins, so the evidence stays still and readable. A still picture under explaining narration is fine.
+23. **Fixed visual vocabulary.** The storyboard header fixes a colour and symbol for each quantity, and they never change between plot, diagram and equation. One focal element per beat in its colour, the rest in `line`/`dim`.
+24. **Minimal text.** On screen only labels, the equation, scaling laws and magnitudes, the plan, and at a scene's conclusion an optional caption of the claim, about 8 words or fewer, next to its evidence. Never the narration.
+25. **Carry the picture into the next scene.** As in a slide talk, a scene's last picture normally stays on screen while the next scene starts, and the next scene is introduced from it: the element that continues is moved, zoomed into or transformed, the rest is dimmed and fades once the new picture has taken over. This is a strong preference, not an absolute rule: when the talk clearly moves to another section of the report, the new scene may start from an empty frame, provided its first picture appears as the narration begins. Within a scene keep at most ~7 objects, and fade scaffolding (`A.out`) once it is no longer needed.
+
+**Craft**
+
+- **Composition**: the main plot or diagram fills about 60 % of the frame; generous spacing between shapes (an arrow between two shapes needs at least ~120 px of room); align to a grid (multiples of 20 px); joined shapes of similar size.
+- **Finish**: dark ground, soft glow on tracer dots, rounded strokes, eased entrances (`power3.out`), staggered labels.
+- **Longer videos** (2 min and longer): one scene per finding, and a final scene that brings the key plots back beside the conclusions.
 
 ## 4. Write the storyboard: words and pictures together
 
 The explanation is carried as much by the picture as by the voice, so both are written together, beat by beat, in one file: `storyboard.md`. Never write the narration first and decorate it afterwards. For every beat, decide at the same time what is said, what happens on screen, and how that picture explains the idea.
 
-One Markdown table per scene, one row per beat, four columns:
+The file starts with a header that lists every idea in the report with the scene that covers it, the plan, and the visual vocabulary. Then comes one Markdown table per scene, one row per beat, four columns. Before its table, each scene states its conclusion line and its link: how it follows from an earlier conclusion, or that it starts a new part of the report:
 
 ```markdown
+Audience: scientific; knows the general field, not this report's physics. Target: about 1 min.
+Report ideas, all covered:
+1. Under resonant drive the excitation probability oscillates in time (scene 1).
+2. The Rabi frequency Ω is proportional to the drive amplitude (scene 1).
+3. A pulse lasting π/Ω, a π pulse, flips the qubit completely (scene 1).
+Plan: one part, so no plan on screen.
+Colours: excitation probability P and the state dot = accent; drive and Ω = blue; levels = line.
+
 ## Scene 1: Rabi oscillation
+
+Conclusion: under resonant drive the excitation probability follows sin²(Ωt/2), with Ω proportional to the drive amplitude, so a pulse lasting π/Ω flips the qubit.
+Link: first scene; it sets the context, a two-level qubit under resonant drive.
 
 | id | Spoken (with [cue] markers) | On screen | How the picture explains it |
 |---|---|---|---|
-| vo1 | Drive a qubit with a [drive]resonant microwave, and it does [jump]not simply [cross]jump to the excited state. | Qubit box at left with two levels, state dot on the lower one. `drive`: drive circle at right, wavy arrow grows into the qubit. `jump`: a straight dashed jump from lower to upper level appears. `cross`: it is struck through in red. | The arrow's direction shows cause and effect. Striking out the naive jump states the wrong intuition visibly, so the next beat can replace it. |
-| vo2 | Instead, it [osc]swings back and forth between ground and excited, like a [pend]pendulum. | `osc`: axes appear below, P(t) draws left to right with a tracer dot on its tip, and the state dot in the qubit box rises and falls in step. `pend`: a pendulum beside the plot swings with the same timing. | Plot, level diagram and pendulum share one start, duration and ease, so the viewer sees one motion three ways and links the abstract curve to a familiar swing. |
-| vo3 | The [ylabel]chance of finding it excited follows [eq]sine squared of omega t over two. | `ylabel`: the P axis label pulses. `eq`: P(t) = sin²(Ωt/2) builds term by term at right; Ω and the curve tint to the accent colour together. | The shared colour ties the symbol Ω to the speed of the swing, so the equation reads as a description of the curve already on screen. |
-| vo4 | Stop the drive at the [peak]first peak. That is a [pilabel]pi pulse: a [flip]perfect flip. | `peak`: tracer stops, mark with guides on the first maximum. `pilabel`: label "π pulse" under the mark. `flip`: ring flash on the state dot, now on the upper level; drive arrow fades. | Stopping the moving dot at the maximum shows that the pulse length is chosen, not given. The dot sitting on the upper level makes "perfect flip" literal. |
+| vo1 | We drive a superconducting qubit with a [drive]resonant microwave and record the [ylabel]probability of finding it excited, versus [xlabel]drive time. | Qubit box at left with two levels, state dot on the lower one. `drive`: drive circle at right, wavy arrow grows into the qubit. `ylabel`: axes draw below, P label in the accent colour. `xlabel`: t label appears. | The arrow shows what acts on what. Naming both axes before any data lets the viewer read the plot the moment the curve appears. |
+| vo2 | As the drive continues, this probability [osc]swings between zero and one, the way a [pend]pendulum swings between its turning points. | `osc`: P(t) draws left to right with a tracer dot on its tip, and the state dot in the qubit box rises and falls in step. `pend`: a pendulum beside the plot swings with the same timing. | Plot, level diagram and pendulum share one start, duration and ease, so the curve is seen as one continuous rotation, not a jump. |
+| vo3 | The swing follows [eq]sine squared of omega t over two, and the Rabi frequency [om]omega is proportional to the drive amplitude. | `eq`: P(t) = sin²(Ωt/2) builds term by term at right. `om`: Ω ∝ A appears beneath it; Ω and the drive arrow tint blue together, and the period 2π/Ω is marked on the time axis. | The shared colour ties Ω to the drive and to the period on the plot. The scaling law says how to change the swing: double the amplitude and the period halves. |
+| vo4 | So stopping at the [peak]first maximum, a [pilabel]pi pulse, leaves the qubit [flip]fully excited. | `peak`: the tracer stops, a mark with guides on the first maximum. `pilabel`: label "π pulse" under the mark, with its duration π/Ω on the axis. `flip`: ring flash on the state dot, now on the upper level; then everything holds still. | Stopping the dot at the maximum shows that the pulse length is chosen, not given. The dot on the upper level is the evidence for the conclusion line. |
 ```
 
 Column rules:
@@ -117,7 +166,7 @@ Column rules:
 
 Other rules:
 
-- Number of beats from the length table (section 0). End on the one idea in one line.
+- Number of beats from the length table (section 0). Follow the narrative rules of section 3: every idea in the header is covered, the first beat names the system, each scene states its conclusion or leads explicitly into the next, and the last scene restates the conclusions of every part.
 - Cue names are letters, digits, `_` or `-`, unique across the storyboard. For multi-scene videos prefix them with the scene (`s2_peak`).
 - Aim for one cue every 3–5 s of speech: every cue is a visual event.
 
@@ -133,13 +182,15 @@ The On screen column is the build plan for section 6, and the last column is wha
 
 Do not ask the person to approve the storyboard. Have an independent reviewer subagent check it instead, then fix and carry on without stopping.
 
-Start the reviewer with the Agent tool. Give it only the path of the source report, `storyboard.md`, the target length and the register. Do not pass your own summary or reasoning, so the review is not anchored on it. Brief it as a referee with these competences:
+Start the reviewer with the Agent tool. Give it only the path of the source report, `storyboard.md`, the target length, the register, and the numbered rules of section 3 copied into the brief. Do not pass your own summary or reasoning, so the review is not anchored on it. Brief it as a referee with these competences:
 
 - **Domain expertise** in the report's field, at the report's level (for a superconducting-qubit report, a quantum-information physicist): every statement, number, unit, sign, regime of validity and causal claim is correct.
 - **Source fidelity**, as a journal referee would check it: every claim, value and equation traces to the report, nothing is overclaimed or generalised beyond it, and illustrative values are marked as illustrative.
 - **Mathematical rigour**: the equations shown are the report's main ones and are transcribed correctly, the spoken form matches the typeset form, every symbol is defined when it first appears, and notation and colour per quantity stay consistent.
 - **Analogies and limiting cases**: each analogy holds in the regime shown and does not suggest something false where it breaks down, and each limiting case is worked out correctly.
 - **Visual accuracy**: each planned plot has the right shape and features (period, maxima, asymptotes, scales), axes name the right quantities, and no diagram is physically misleading.
+- **Coverage**: every idea in the report, each section, result, mechanism and conclusion, appears in the storyboard, and the header's list of ideas is complete. Reordering and rewording are fine; an omission is an `error`.
+- **Talk structure**, as a session chair in the field would judge it: the storyboard follows each numbered rule of section 3. Context comes first with no hook, nothing is spoken without the relevant picture on screen, every scene has one assertion as its conclusion line, links between scenes are stated where they exist and never invented between unrelated parts, plots are used wherever a dependence or comparison is claimed, axes are named before data is read, dependences come with their scaling and orders of magnitude, every equation follows its picture, each scene is introduced from the previous picture except at a clear change of section, and there is no decorative motion. Each issue names the rule it breaks.
 - **Pedagogy**: ideas build in order with prerequisites first, each beat's picture and sentence say the same thing, the last column holds a real visual explanation, and the level suits the register.
 - **Timing**: total words against the target length (about 150 words per minute), about 19 words or fewer per beat, a cue every 3–5 s, and every Spoken cue present in On screen.
 
@@ -168,7 +219,7 @@ Re-run it whenever the storyboard changes, after extracting `script.txt` again. 
 
 Build from the storyboard's On screen column: each cue there becomes an animation call at that cue, in the order written.
 
-`index.html` (root): load GSAP, the cues and shapes.js before any scene, mount one scene host per scene, and paste the printed `<audio>` tags. Set the root's `data-duration` to `CUES.total`; each scene host gets its own `data-start`/`data-duration` (one scene: 0 and `CUES.total`).
+`index.html` (root): load GSAP, the cues and shapes.js before any scene, mount the scene hosts, and paste the printed `<audio>` tags. Prefer one composition holding all scenes in one timeline (`S.cues(0)`), so a scene's last picture can stay on screen while the next scene starts (section 3, rule 25). Split into several hosts only for long videos, and then let the earlier host's `data-duration` run into the first beat of the next one. Set the root's `data-duration` to `CUES.total`; each scene host gets its own `data-start`/`data-duration` (one scene: 0 and `CUES.total`).
 
 ```html
 <head>
