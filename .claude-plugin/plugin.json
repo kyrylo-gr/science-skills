@@ -1,15 +1,11 @@
 {
-  "name": "physics-skills",
-  "description": "Kyrylo Gerashchenko's library of Claude Code skills for physics research.",
+  "name": "science-skills",
+  "description": "Kyrylo Gerashchenko's personal library of Claude Code skills for scientific work.",
   "author": {
     "name": "Kyrylo Gerashchenko",
     "url": "https://github.com/kyrylo-gr"
   },
-  "repository": "https://github.com/kyrylo-gr/physics-skills",
-  "keywords": [
-    "physics",
-    "research",
-    "skills"
-  ],
+  "repository": "https://github.com/kyrylo-gr/science-skills",
+  "keywords": ["science", "research", "skills"],
   "license": "MIT"
 }

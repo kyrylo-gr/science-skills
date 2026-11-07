@@ -1,32 +1,32 @@
-# physics-skills
+# science-skills
 
-This is my personal collection of [Claude Code](https://code.claude.com) skills for physics research. It is packaged as a plugin marketplace so I can install the same skills on every machine, and so anyone else can try them.
+A personal collection of [Claude Code](https://code.claude.com) skills for scientific research. Each skill is developed iteratively and added to the collection once it has converged to a stable form. It is packaged as a plugin marketplace, so the same skills install on any machine in two commands, and anyone else is welcome to try them.
 
 ## Install
 
 Add the marketplace once, then install the plugin:
 
 ```bash
-claude plugin marketplace add kyrylo-gr/physics-skills
-claude plugin install physics-skills@physics-skills
+claude plugin marketplace add kyrylo-gr/science-skills
+claude plugin install science-skills@science-skills
 ```
 
-Inside a Claude Code session the same works as `/plugin marketplace add kyrylo-gr/physics-skills` and `/plugin install physics-skills@physics-skills`.
+Inside a Claude Code session the same works as `/plugin marketplace add kyrylo-gr/science-skills` and `/plugin install science-skills@science-skills`.
 
 To make the marketplace available to everyone working in a given repository, add it with `--scope project`; that records it in that repository's `.claude/settings.json`.
 
 ## Update
 
 ```bash
-claude plugin marketplace update physics-skills
-claude plugin update physics-skills@physics-skills
+claude plugin marketplace update science-skills
+claude plugin update science-skills@science-skills
 ```
 
 Auto-update is off by default. It can be switched on under `/plugin` → Marketplaces.
 
 ## Skills
 
-Once the plugin is installed a skill is invoked as `/physics-skills:<skill-name>`.
+Once the plugin is installed a skill is invoked as `/science-skills:<skill-name>`.
 
 ### `report-to-explainer-video`
 
@@ -44,9 +44,10 @@ No manifest edits are needed: the plugin picks up every folder under `skills/`.
 
 ```
 .claude-plugin/marketplace.json   marketplace manifest (lists the plugin)
-.claude-plugin/plugin.json        plugin manifest (name, author)
+.claude-plugin/plugin.json        plugin manifest (name, author, license)
 .claude/settings.json             project settings for Claude Code
 .githooks/commit-msg              rejects commit messages carrying AI session links
+AGENTS.md                         instructions for AI coding agents (CLAUDE.md links to it)
 skills/<skill-name>/SKILL.md      one folder per skill
 ```
 
