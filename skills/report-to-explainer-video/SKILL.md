@@ -1,6 +1,6 @@
 ---
 name: "report-to-explainer-video"
-description: "Turn a report, paper or notes into a visually rich, animated narrated explainer video (MP4) with kokoro-onnx voice and HyperFrames: asks the target length first, explains through animated diagrams, plots and equations synced to spoken words, and gates every frame with a geometry checker."
+description: "Turn a report, paper or notes into a visually rich, animated narrated explainer video (MP4) with kokoro-onnx voice and HyperFrames: asks the target length first, storyboards narration and on-screen explanation together, has a scientific reviewer subagent check the storyboard, explains through animated diagrams, plots and equations synced to spoken words, and gates every frame with a geometry checker."
 ---
 
 # Report → animated, narrated explainer video (kokoro-onnx + HyperFrames)
@@ -81,7 +81,7 @@ Mixed audiences: scientific structure, popular pictures — keep the main equati
 
 ## 3. Visual direction: make it impressive, explain with motion
 
-Choose the picture before writing the script. Per scene: one diagram that grows (one part per beat), a worked example travelling through the steps, or a continuous transformation. Never bullet slides, icon rows, or a whole diagram dropped at once.
+Design the pictures together with the words (section 4), never as decoration added after the narration. Per scene: one diagram that grows (one part per beat), a worked example travelling through the steps, or a continuous transformation. Never bullet slides, icon rows, or a whole diagram dropped at once.
 
 - **Something meaningful moves in every beat**; no stretch longer than ~3 s with nothing moving. If a beat is pure narration, use `A.drift` (slow push-in) or a pulse on what is being discussed.
 - **Motion carries meaning**: arrows grow in the direction of cause → effect; curves draw left→right with a tracer dot riding the tip; quantities that change are animated, not swapped; a transformation morphs (move/scale), not cut.
@@ -91,25 +91,63 @@ Choose the picture before writing the script. Per scene: one diagram that grows 
 - **Polish**: dark ground, soft glow on tracer dots, rounded strokes, eased entrances (`power3.out`, `back.out` for pops), staggered labels. Text is minimal: labels and the equation, never narration sentences.
 - **Longer videos** (≥ 2 min): give each idea its own scene composition, open with a 3–5 s visual hook (the most striking frame of the video, animated), and close with a recap frame that reassembles the key pictures together.
 
-## 4. Write the beat script with cue markers
+## 4. Write the storyboard: words and pictures together
 
-`script.txt`, one beat per line, `id|text`. Each beat is one or two sentences, about 19 spoken words or fewer. Number of beats from the length table. End on the one idea in one line.
+The explanation is carried as much by the picture as by the voice, so both are written together, beat by beat, in one file: `storyboard.md`. Never write the narration first and decorate it afterwards. For every beat, decide at the same time what is said, what happens on screen, and how that picture explains the idea.
 
-Put a `[cue]` marker immediately **before the word the picture should land on**:
+One Markdown table per scene, one row per beat, four columns:
 
-```text
-# id|narration
-vo1|Drive a qubit with a [drive]resonant microwave, and it does [jump]not simply [cross]jump to the excited state.
-vo2|Instead, it [osc]swings back and forth between ground and excited, like a [pend]pendulum.
-vo3|The [ylabel]chance of finding it excited follows [eq]sine squared of omega t over two.
-vo4|Stop the drive at the [peak]first peak. That is a [pilabel]pi pulse: a [flip]perfect flip.
+```markdown
+## Scene 1: Rabi oscillation
+
+| id | Spoken (with [cue] markers) | On screen | How the picture explains it |
+|---|---|---|---|
+| vo1 | Drive a qubit with a [drive]resonant microwave, and it does [jump]not simply [cross]jump to the excited state. | Qubit box at left with two levels, state dot on the lower one. `drive`: drive circle at right, wavy arrow grows into the qubit. `jump`: a straight dashed jump from lower to upper level appears. `cross`: it is struck through in red. | The arrow's direction shows cause and effect. Striking out the naive jump states the wrong intuition visibly, so the next beat can replace it. |
+| vo2 | Instead, it [osc]swings back and forth between ground and excited, like a [pend]pendulum. | `osc`: axes appear below, P(t) draws left to right with a tracer dot on its tip, and the state dot in the qubit box rises and falls in step. `pend`: a pendulum beside the plot swings with the same timing. | Plot, level diagram and pendulum share one start, duration and ease, so the viewer sees one motion three ways and links the abstract curve to a familiar swing. |
+| vo3 | The [ylabel]chance of finding it excited follows [eq]sine squared of omega t over two. | `ylabel`: the P axis label pulses. `eq`: P(t) = sin²(Ωt/2) builds term by term at right; Ω and the curve tint to the accent colour together. | The shared colour ties the symbol Ω to the speed of the swing, so the equation reads as a description of the curve already on screen. |
+| vo4 | Stop the drive at the [peak]first peak. That is a [pilabel]pi pulse: a [flip]perfect flip. | `peak`: tracer stops, mark with guides on the first maximum. `pilabel`: label "π pulse" under the mark. `flip`: ring flash on the state dot, now on the upper level; drive arrow fades. | Stopping the moving dot at the maximum shows that the pulse length is chosen, not given. The dot sitting on the upper level makes "perfect flip" literal. |
 ```
 
-- Cue names are letters, digits, `_` or `-`, unique across the script. For multi-scene videos prefix them with the scene (`s2_peak`).
+Column rules:
+
+- **Spoken**: one or two sentences, about 19 words or fewer. Put a `[cue]` marker immediately **before the word the picture should land on**. Write maths the way it is spoken ("sine squared of omega t over two"); the typeset form goes on screen. Do not read the on-screen text word for word.
+- **On screen**: the objects present and what moves, organised by cue. Every cue in the Spoken cell appears here with the event that lands on it, and no visual event happens without a cue or a stated offset from one. Say what is faded out. Name shapes.js builders and animations (section 7) where it helps. Something meaningful moves in every beat.
+- **How the picture explains it**: what a viewer would understand from the picture with the sound off, and how it completes the sentence: cause and effect from an arrow's direction, a symbol tied to its curve by a shared colour, an analogy moving in step, a limiting case collapsing. If this cell only says that the picture "illustrates" the sentence, the beat has no visual explanation yet: redesign it.
+- No `|` character inside any cell.
+
+Other rules:
+
+- Number of beats from the length table (section 0). End on the one idea in one line.
+- Cue names are letters, digits, `_` or `-`, unique across the storyboard. For multi-scene videos prefix them with the scene (`s2_peak`).
 - Aim for one cue every 3–5 s of speech: every cue is a visual event.
-- Write maths the way it should be spoken ("sine squared of omega t over two"); put the typeset form on screen.
-- The narrator should not read the on-screen text word for word.
-- **Show the script to the person — with a one-line description of the picture for each beat — and get approval before building visuals**, unless they asked for no stops.
+
+The voice tool reads only the id and Spoken columns. Extract them into `script.txt` after every storyboard edit:
+
+```bash
+awk -F'|' '$2 ~ /^ *[A-Za-z][A-Za-z0-9_-]* *$/ && $2 !~ /^ *id *$/ { gsub(/^ +| +$/, "", $2); gsub(/^ +| +$/, "", $3); print $2 "|" $3 }' storyboard.md > script.txt
+```
+
+The On screen column is the build plan for section 6, and the last column is what the snapshots are judged against in section 8.
+
+### Scientific review by a subagent
+
+Do not ask the person to approve the storyboard. Have an independent reviewer subagent check it instead, then fix and carry on without stopping.
+
+Start the reviewer with the Agent tool. Give it only the path of the source report, `storyboard.md`, the target length and the register. Do not pass your own summary or reasoning, so the review is not anchored on it. Brief it as a referee with these competences:
+
+- **Domain expertise** in the report's field, at the report's level (for a superconducting-qubit report, a quantum-information physicist): every statement, number, unit, sign, regime of validity and causal claim is correct.
+- **Source fidelity**, as a journal referee would check it: every claim, value and equation traces to the report, nothing is overclaimed or generalised beyond it, and illustrative values are marked as illustrative.
+- **Mathematical rigour**: the equations shown are the report's main ones and are transcribed correctly, the spoken form matches the typeset form, every symbol is defined when it first appears, and notation and colour per quantity stay consistent.
+- **Analogies and limiting cases**: each analogy holds in the regime shown and does not suggest something false where it breaks down, and each limiting case is worked out correctly.
+- **Visual accuracy**: each planned plot has the right shape and features (period, maxima, asymptotes, scales), axes name the right quantities, and no diagram is physically misleading.
+- **Pedagogy**: ideas build in order with prerequisites first, each beat's picture and sentence say the same thing, the last column holds a real visual explanation, and the level suits the register.
+- **Timing**: total words against the target length (about 150 words per minute), about 19 words or fewer per beat, a cue every 3–5 s, and every Spoken cue present in On screen.
+
+Ask for a verdict, PASS or REVISE, and a list of issues. Each issue gives the beat id, a severity and a concrete fix. Severity is `error` for scientifically wrong or unsupported by the report, `major` for misleading or confusing, and `minor` for style.
+
+Fix every error and major, extract `script.txt` again, and send the revised storyboard to a fresh reviewer. Stop at PASS or after three rounds. If a point is still disputed after three rounds, keep the scientifically safer version and list the point in the delivery note. Minor issues are at your judgement.
+
+If no subagent tool is available, run the same review yourself as a separate pass: reread the source rather than relying on memory, follow the checklist above, and say in the delivery note that the review was not independent.
 
 ## 5. Generate the narration and cues
 
@@ -124,9 +162,11 @@ It writes `assets/voice/<id>.wav`, `assets/cues.js` (`window.CUES = {vo1_start, 
 
 Options: `--voice` (e.g. `af_heart`, `af_bella`, `am_michael`, `bf_emma`, `bm_george`), `--speed 0.95–1.05`, `--gap`, `--start`, `--tail` (hold after the last word, default 2.8 s so the closing line can be read).
 
-Re-run it whenever the script changes. The animation follows automatically because it only reads `window.CUES`.
+Re-run it whenever the storyboard changes, after extracting `script.txt` again. The animation follows automatically because it only reads `window.CUES`.
 
 ## 6. Build the composition
+
+Build from the storyboard's On screen column: each cue there becomes an animation call at that cue, in the order written.
 
 `index.html` (root): load GSAP, the cues and shapes.js before any scene, mount one scene host per scene, and paste the printed `<audio>` tags. Set the root's `data-duration` to `CUES.total`; each scene host gets its own `data-start`/`data-duration` (one scene: 0 and `CUES.total`).
 
@@ -296,7 +336,7 @@ npx -y hyperframes check --json                                 # fix every erro
 npx -y hyperframes snapshot --at <cue times + 0.3 s, comma-separated> -o snaps --no-end
 ```
 
-- Look at `snaps/contact-sheet.jpg` as a viewer would: is each frame beautiful and does it say what the narration says at that moment? Labels next to what they name, equation readable, dot on the curve, focal element obvious, the last line held at least 2.6 s.
+- Look at `snaps/contact-sheet.jpg` as a viewer would: is each frame beautiful, does it show what the storyboard's On screen column promises at that cue, and does it explain what its last column says it explains? Labels next to what they name, equation readable, dot on the curve, focal element obvious, the last line held at least 2.6 s.
 - A `line_unread` warning means the closing line needs a longer hold: raise `--tail` and re-run narrate.py.
 - Then render and measure:
 
@@ -306,6 +346,6 @@ npx -y hyperframes audio renders/explainer.mp4 --json   # loudness about -16..-1
 ffmpeg -nostdin -v error -ss <t> -i renders/explainer.mp4 -frames:v 1 frame.png   # spot-check frames of the final file
 ```
 
-Deliver the MP4 and a tarball of the project without `node_modules` and `renders`, plus `script.txt`. Say what was checked (geometry gate result, HyperFrames check, loudness, final length vs target): sync is measured, not heard, so ask the person to watch once. The agent cannot judge motion smoothness or the voice's prosody at split points. If a split sounds choppy, move the marker one word earlier or later, or drop it, and re-run narrate.py.
+Deliver the MP4 and a tarball of the project without `node_modules` and `renders`, plus `storyboard.md` and `script.txt`. Say what was checked (scientific review verdict, number of rounds and any disputed points, geometry gate result, HyperFrames check, loudness, final length vs target): sync is measured, not heard, so ask the person to watch once. The agent cannot judge motion smoothness or the voice's prosody at split points. If a split sounds choppy, move the marker one word earlier or later, or drop it, and re-run narrate.py.
 
 No music by default. If the person wants a bed, add an `<audio id="music">` at about 0.14 volume under the voice.
