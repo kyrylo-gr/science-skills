@@ -242,7 +242,7 @@
         return mk("text", o, rectGeo(x0, o.y - size * 0.6, w, size * 1.2), (gr) => txt(gr, Object.assign({}, o, { id: null, size, tone: o.tone || "ink" })).setAttribute("data-edge", "")); },
       /** Horizontal level line (energy level, baseline); label to the right by default. */
       level(o) { return mk("level", Object.assign({ tone: "ink", italic: true }, o), rectGeo(o.x, o.y - 3, o.w, 6), (gr, col) =>
-        drawable(body("line", sk(col, o.stroke || 6, { x1: o.x, y1: o.y, x2: o.x + o.w, y2: o.y }), gr), o.w), "right"); },
+        drawable(body("line", sk(col, o.stroke || 6, { x1: o.x, y1: o.y, x2: o.x + o.w, y2: o.y }), gr), o.w, o.dash), "right"); },
       /** Group frame around members (ids/elements/geos): a data-container, label above its top-left corner. */
       frame(members, o = {}) { const gs = members.map(geo), pad = o.pad ?? 36;
         const x0 = Math.min(...gs.map((g) => g.x)) - pad, y0 = Math.min(...gs.map((g) => g.y)) - pad;
@@ -494,7 +494,7 @@
     },
     _draw(tl, e, t, o) { const d = o.d ?? 0.8, labs = q(e, ".lab"), pops = q(e, ".pop");
       tl.set(e, { opacity: 1 }, t); drawOn(tl, q(e, ".draw"), t, d);
-      const fills = q(e, "[data-fill]"); if (fills.length) tl.fromTo(fills, { attr: { "fill-opacity": 0 } }, { attr: { "fill-opacity": 1 }, duration: 0.4 }, t + d * 0.6);
+      q(e, "[data-fill]").forEach((f) => tl.fromTo(f, { attr: { "fill-opacity": 0 } }, { attr: { "fill-opacity": +(f.getAttribute("fill-opacity") ?? 1) }, duration: 0.4 }, t + d * 0.6));   // back to the shape's own opacity (0.16 for tone fills), not 1
       if (pops.length) tl.fromTo(pops, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t + d * 0.5);
       if (labs.length) tl.fromTo(labs, { opacity: 0 }, { opacity: 1, duration: 0.35, stagger: Math.min(0.08, 0.6 / labs.length) }, t + d * 0.6); },
     _grow(tl, e, t, o) { const d = o.d ?? 0.6, labs = q(e, ".lab");
@@ -595,7 +595,7 @@
       tl.set(ring, { opacity: 1 }, t); drawOn(tl, ring, t, d, "power2.out"); tl.to(ring, { opacity: 0, duration: 0.4 }, t + d + (o.hold ?? 1.2));
       return tl; },
     /** Ring burst from a target's centre ("there!"). {tone, d} */
-    flash(tl, target, t, o = {}) { const e = els(target)[0], sc = sceneOf(e), g = sc.geo(e), r = Math.max(g.w, g.h) / 2 + 10;
+    flash(tl, target, t, o = {}) { const e = els(target)[0], sc = sceneOf(e), g = sc.geo(e), r = o.r ?? Math.min(Math.max(g.w, g.h) / 2 + 10, 160);   // capped: a plot-sized ring reads as a frame, not a pointer
       const ring = el("circle", sk(tone(o.tone || "accent"), 5, { cx: g.cx, cy: g.cy, r, "data-obj": "ring", "data-overlap-ok": "", style: HIDE }), isSvg(e) ? sc.cam : sc.svg);
       gsap.set(ring, { svgOrigin: `${g.cx} ${g.cy}` });
       tl.set(ring, { opacity: 0.9 }, t).to(ring, { opacity: 0, scale: 1.7, duration: o.d ?? 0.7, ease: "power2.out" }, t);
@@ -613,7 +613,8 @@
 
     /* ---------- equations ---------- */
     /** Reveal an equation term by term: schedule = [[key, at], ..]; unlisted parts appear with the first. */
-    terms(tl, eq, schedule, o = {}) { const t0 = Math.min(...schedule.map((s) => s[1])), listed = new Set(schedule.map((s) => s[0]));
+    terms(tl, eq, schedule, o = {}) { schedule.forEach(([k]) => { if (!eq.t[k]) throw new Error(`A.terms: equation has no term "${k}" (keys: ${Object.keys(eq.t)})`); });
+      const t0 = Math.min(...schedule.map((s) => s[1])), listed = new Set(schedule.map((s) => s[0]));
       tl.set(eq, { opacity: 1 }, t0);
       const dy = parseFloat(eq.style.fontSize) * 0.25, rise = (e, t) => tl.fromTo(e, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: o.d ?? 0.45, ease: "power3.out" }, t);
       Array.from(eq.children).forEach((s) => { if (!listed.has(s.dataset.k)) rise(s, t0); });

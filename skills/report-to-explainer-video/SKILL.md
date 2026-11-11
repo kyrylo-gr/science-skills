@@ -37,25 +37,44 @@ After narrate.py prints the total, compare it with the target: more than ±15 % 
 
 ## 1. Set up (once per session)
 
+**Dependencies: check, never install by default.** This skill does not install packages or download models on its own, and never creates a virtualenv or `node_modules` per work folder. Check what is there:
+
 ```bash
-W=$PWD/explainer-work; mkdir -p "$W/tts" && cd "$W/tts"
-python3 -m venv venv && ./venv/bin/pip install -q kokoro-onnx soundfile numpy
-# Model files come from GitHub releases (works where huggingface.co is blocked). int8 = 88 MB, CPU-fast.
-for f in kokoro-v1.0.int8.onnx voices-v1.0.bin; do
-  curl -sL -o $f https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/$f; done
-which ffmpeg ffprobe node   # Node >= 22 and ffmpeg are required by HyperFrames
-python3 -c "import playwright"   # check_layout.py needs Python Playwright + a Chromium
+python3 -c "import kokoro_onnx, soundfile, numpy" ; python3 -c "import playwright"   # or the project's own interpreter
+which ffmpeg ffprobe node                                  # Node >= 22 and ffmpeg are required by HyperFrames
+ls ~/.cache/explainer-tts/*.onnx ~/.cache/explainer-tts/voices-*.bin 2>/dev/null   # kokoro model + voices, if already downloaded
 ```
 
-**Get the toolkit.** The code ships with this skill in its `scripts/` folder (`narrate.py`, `shapes.js`, `check_layout.py`, `API.md`, `example_scene.html`); copy that folder to `$W/toolkit`. If the folder is missing, read the same files from the *Explainer Video Toolkit* artifact (https://claude.ai/artifact/9ppFu6e9HSXbNn7sL5enTM) with the Artifact tool — `action: "read"`, that `url`, `paths: ["narrate.py", "shapes.js", "check_layout.py", "API.md", "example_scene.html"]`, `out_dir: "$W/toolkit"`. If neither works, stop and tell the person; do not rewrite the scripts from memory.
+Needed: `kokoro-onnx`, `soundfile`, `numpy` (narrate.py); Python `playwright` with a Chromium (check_layout.py); `ffmpeg`, `node`; the kokoro model `kokoro-v1.0.int8.onnx` (88 MB) and `voices-v1.0.bin`; `hyperframes` and `gsap` (npm, per `video/` project). Use what is found and record the interpreter and model paths as `PY`, `MODEL`, `VOICES`.
 
-Copy `narrate.py` into `$W/tts/`. Then create the project and drop in the two helpers:
+If something is missing, list it to the person and decide where it belongs from the project hierarchy: an existing venv, conda env, `requirements`/`pyproject`/`package.json` of the repo or a parent folder, or a shared user-level cache such as `~/.cache/explainer-tts`. Prefer extending what the project already uses over creating something new, and install into one shared location, never into the work folder. If the right place is not clear, or the install is large or system-wide, ask the person before installing. Builders (sub-agents) never install or upgrade packages: the lead resolves dependencies once before launching them.
+
+Only after the person agrees (or the project clearly already installs this way), the commands are: `pip install kokoro-onnx soundfile numpy playwright` into the chosen environment, then `python3 -m playwright install chromium-headless-shell`; the model files come from GitHub releases (works where huggingface.co is blocked):
+
+```bash
+for f in kokoro-v1.0.int8.onnx voices-v1.0.bin; do
+  curl -sL -o ~/.cache/explainer-tts/$f https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/$f; done
+```
+
+Then create the work folder:
+
+```bash
+W=$PWD/explainer-work; mkdir -p "$W/tts"       # place $W as described next
+git check-ignore -q "$W" && echo IGNORED        # if printed, pick another place
+```
+
+**Where the work folder goes.** Put `$W` where it survives and can be committed: next to the source report (for a repo with per-study `reports/`, use `<study>/reports/<report-name>_video/` or the repo's equivalent), never in a scratch, temp or gitignored folder. Check with `git check-ignore -q "$W" && echo IGNORED` before writing anything; if it is ignored, pick another place. Large regenerable files stay out of git: add `node_modules/`, `renders/`, `assets/voice/` and `.hyperframes/` to a `.gitignore` inside `$W`. Never put a venv or model files in `$W`: they live in the shared environment and cache from the dependencies step.
+
+**Get the toolkit.** The code ships with this skill in its `scripts/` folder (`narrate.py`, `shapes.js`, `check_layout.py`, `build_index.py`, `scene_util.js`, `API.md`, `example_scene.html`); copy that folder to `$W/toolkit`. If the folder is missing, read the same files from the *Explainer Video Toolkit* artifact (https://claude.ai/artifact/9ppFu6e9HSXbNn7sL5enTM) with the Artifact tool — `action: "read"`, that `url`, `paths: ["narrate.py", "shapes.js", "check_layout.py", "build_index.py", "scene_util.js", "API.md", "example_scene.html"]`, `out_dir: "$W/toolkit"`. If neither works, stop and tell the person; do not rewrite the scripts from memory.
+
+Copy `narrate.py` into `$W/tts/` (script only). Then create the project and drop in the two helpers:
 
 ```bash
 export HYPERFRAMES_TELEMETRY_DISABLED=1 DO_NOT_TRACK=1      # HyperFrames sends telemetry by default
 cd "$W" && npx -y hyperframes@latest init video --example blank --non-interactive
 cd video && npm i gsap && mkdir -p assets compositions && cp node_modules/gsap/dist/gsap.min.js assets/
 cp "$W/toolkit/shapes.js" assets/ && cp "$W/toolkit/check_layout.py" . && cp "$W/toolkit/example_scene.html" compositions/explain.html
+cp "$W/toolkit/build_index.py" . && cp "$W/toolkit/scene_util.js" assets/     # multi-scene videos only (section 6)
 ```
 
 Sandbox fixes (Claude Cowork cloud workspace and similar locked-down machines):
@@ -203,8 +222,8 @@ If no subagent tool is available, run the same review yourself as a separate pas
 ## 5. Generate the narration and cues
 
 ```bash
-cd "$W/video" && "$W/tts/venv/bin/python" -I "$W/tts/narrate.py" script.txt --project . \
-  --model "$W/tts/kokoro-v1.0.int8.onnx" --voices "$W/tts/voices-v1.0.bin" --voice af_heart
+cd "$W/video" && "$PY" -I "$W/tts/narrate.py" script.txt --project . \
+  --model "$MODEL" --voices "$VOICES" --voice af_heart
 ```
 
 How it syncs: each beat is synthesised in fragments split at the markers. Fragments are trimmed of edge silence and joined, with a natural pause only where the text has punctuation. A cue's time is the exact length of the audio before it, so no aligner model is needed. Each beat becomes one loudness-normalised clip (−16 LUFS, −1.5 dBTP). Beats are laid end to end with a 0.45 s gap starting at 0.6 s.
@@ -277,6 +296,10 @@ Scene file `compositions/explain.html`: everything inside `<template>`, one `<sv
 </div>
 </template>
 ```
+
+**Several scenes.** Beat ids are `s<N><letter>` (`s1a`, `s1b`, …, `s2a`, …): scene N starts with beat `s<N>a`. After narrate.py, run `python3 build_index.py` in `video/`: it writes `index.html` (one host per scene, scene N from 0.4 s before its first beat to the next scene, all narration clips, every `assets/*.js` loaded) and `assets/scenes.js`. Each scene is `compositions/s<N>.html`: a `<template id="s<N>-template">` with `div#s<N>-root` (data-composition-id `s<N>`, 1920×1080), `div#s<N>-wrap`, `svg#s<N>-svg`, and a script `const { C, sc, tl, end } = SU.begin("s<N>", "<N> · Title"); … end();`. `C` holds scene-local cue times. Plot data computed by the study goes in `assets/data.js` (`window.DATA = {…}`), written by a small export script from the study's stored results, never typed by hand; build_index.py loads it automatically.
+
+**Splitting scenes among builders.** Give each sub-agent two consecutive scenes and one shared brief file. Before launching, write `assets/layout.js` (`window.LAYOUT = { plan: { x0, dx, y, w, h }, … }`) with the positions of every picture that appears in more than one scene: the plan cards, and the final picture of any scene that the next scene starts from (rule 25). Builders read positions from `LAYOUT`, never choose their own for these, and do not edit shared files (`index.html`, `build_index.py`, `cues.js`, `data.js`, `shapes.js`, `scene_util.js`, `layout.js`); missing features are built inside the scene file and reported. Each builder uses its own scratch folder (`<scratch>/s<N>/`). After all return, check the scene joins yourself: snapshot each boundary (last frame of scene N, frames 0.5 s and 1.5 s into scene N+1) and compare.
 
 HyperFrames rules that bite here:
 
@@ -364,6 +387,8 @@ Tones: `ink dim line faint accent blue green red violet teal`; `S.theme({...})` 
 
 **Rules.** Never place arrows by hand; move shapes with `A.move` (a raw `tl.to(shape, {x})` leaves arrows stale, which the checker reports as `arrow_detached`). Draw-on is `pathLength=1` and the dash attribute tween, dashed lines included. Morph/slide/trace/move are keyframed at build: no `onUpdate`, seekable both ways. Equations are measured on an off-screen clone, so they work while a later scene is still hidden; their fonts must be declared in the scene's `<style>` (e.g. `.s-eq{font-family:"EB Garamond"}`) so HyperFrames embeds them. Marks/tangents/areas do not follow a morph: fade them first.
 
+**Moving a composite.** `A.move(tl, [els], t, { scale })` scales each element about its own centre, so a circuit or a plot cannot be shrunk or slid as one picture (links and equation labels also do not follow). Build the picture in a group — `const g = document.createElementNS("http://www.w3.org/2000/svg", "g"); sc.cam.appendChild(g);` — pass `parent: g` to every `sc.*` call of that picture, then tween the group: `tl.to(g, { x, y, scale, svgOrigin: "0 0", duration: 0.8, ease: "power3.inOut" }, t)`. `check_layout.py` measures screen coordinates, so arrows inside stay checked. `A.flash` on a member of a scaled group draws its ring in unscaled coordinates: flash the group, or append the ring to the group.
+
 Exact-maths tricks:
 
 - GSAP `sine.inOut` is exactly (1 − cos πp)/2, i.e. sin²(πp/2), so a `yoyo` tween with `sine.inOut` traces sin² (Rabi oscillation; `A.rotate` on a `sc.rod` is an exact pendulum). Use `repeat: n` with an odd n for full cycles, never `-1`.
@@ -397,6 +422,12 @@ npx -y hyperframes audio renders/explainer.mp4 --json   # loudness about -16..-1
 ffmpeg -nostdin -v error -ss <t> -i renders/explainer.mp4 -frames:v 1 frame.png   # spot-check frames of the final file
 ```
 
-Deliver the MP4 and a tarball of the project without `node_modules` and `renders`, plus `storyboard.md` and `script.txt`. Say what was checked (scientific review verdict, number of rounds and any disputed points, geometry gate result, HyperFrames check, loudness, final length vs target): sync is measured, not heard, so ask the person to watch once. The agent cannot judge motion smoothness or the voice's prosody at split points. If a split sounds choppy, move the marker one word earlier or later, or drop it, and re-run narrate.py.
+Deliver, next to the source report: the MP4, `storyboard.md` and `script.txt` (narration with cue markers), and the project sources (`$W` without `node_modules`, `renders`, `assets/voice`, `.hyperframes`) either as the folder itself or as a tarball. Never leave any deliverable only in a scratch or gitignored folder. Name the files after the report (`<report>.mp4`, `<report>_video_script.txt`, `<report>_video_project.tgz`) and add a link line to the README that indexes the report. Say what was checked (scientific review verdict, number of rounds and any disputed points, geometry gate result, HyperFrames check, loudness, final length vs target): sync is measured, not heard, so ask the person to watch once. The agent cannot judge motion smoothness or the voice's prosody at split points. If a split sounds choppy, move the marker one word earlier or later, or drop it, and re-run narrate.py.
+
+Smaller notes:
+
+- `hyperframes check --json` reports runtime warnings against `index.html` only, with no scene or line. To find the source, run `check_layout.py --scene` with a `console.warn` hook that prints the stack (run each scene; the stack names the `shapes.js` call). A wrong `A.terms` key, the commonest cause, now throws at the scene gate instead.
+- After rendering, a contact sheet of frames at `cue + 1.5 s` for about 25 key cues (ffmpeg `-ss` + `tile=4x7`) is a fast last look; empty axes there are normal when the storyboard draws the curve in the next beat.
+- Length: kokoro at speed 1.04 gave about 2.57 words/s including pauses (1291 words → 502 s).
 
 No music by default. If the person wants a bed, add an `<audio id="music">` at about 0.14 volume under the voice.

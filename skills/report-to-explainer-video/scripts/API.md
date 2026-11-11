@@ -21,7 +21,7 @@ Tones: `ink dim line faint accent blue green red violet teal`; `S.theme({...})` 
 | Circle | `sc.circle({cx,cy,r,label})` | | circle |
 | Dot | `sc.dot({cx,cy,r,glow,label,at:"right"})` | tracers, states | circle = the dot; glow is `data-overlap-ok`, never overlap-flagged |
 | Text | `sc.text({x,y,text,size,anchor,italic})` | free labels (targetable) | text |
-| Level | `sc.level({x,y,w,label})` | energy levels, ceilings, baselines; label right | thin rect |
+| Level | `sc.level({x,y,w,label,dash})` | energy levels, ceilings, baselines; label right | thin rect |
 | Frame | `sc.frame([refs], {pad,label,dash})` | group container around members | `data-container` |
 | Arrow | `sc.arrow(a, b, {fromSide,toSide,gap,bend,route:"elbow",head:"end"\|"both"\|"none",wave,dash,label,labelSide})` | cause → effect; ends computed on the edges | `data-from/to/tail/tip/head/stroke/gap`; a point end is free (not checked) |
 | Link | `sc.link(a, b, {dash,label})` | plain/dashed connection | as arrow, head 0 |
@@ -51,7 +51,7 @@ Tones: `ink dim line faint accent blue green red violet teal`; `S.theme({...})` 
 | Count | `A.count(tl, number, at, {to, d, digits})` | animate a value |
 | Morph | `A.morph(tl, curve, at, {to, d, steps})` | `to(x)` blends; `to(x, s)` (s 0→1) sweeps a real parameter |
 | Slide | `A.slide(tl, tangent, at, {to, d})` | tangent travels along f |
-| Move | `A.move(tl, e\|[els], at, {dx, dy, scale, d, ease, repeat, yoyo})` | moves shapes; **attached arrows/links/springs re-route with it** (same timing) |
+| Move | `A.move(tl, e\|[els], at, {dx, dy, scale, d, ease, repeat, yoyo})` | moves shapes; **attached arrows/links/springs re-route with it** (same timing). `scale` is about each element's own centre: to move or shrink a whole picture, put it in a group (below) |
 | Rotate | `A.rotate(tl, e, at, {from, to, d, repeat, yoyo})` | about origin (rod: pivot). Default `sine.inOut` + yoyo + odd repeat = exact pendulum |
 | Travel | `A.travel(tl, wave, at, {d: period, cycles, dir})` | travelling wave |
 | Jitter | `A.jitter(tl, swarm, at, {d, steps, seed, amp})` | seeded random walk |
@@ -59,10 +59,10 @@ Tones: `ink dim line faint accent blue green red violet teal`; `S.theme({...})` 
 | Tint | `A.tint(tl, e, at, {tone, d})` | recolour body/label/heads (SVG) or text (HTML) — link a symbol to its curve |
 | Focus | `A.focus(tl, [keep], at, {dim})`; `A.focus(tl, null, at, {scene: sc})` | dim everything else (brightness, not opacity); null = undim |
 | Circle | `A.circle(tl, e, at, {tone, hold})` | temporary hand-drawn ellipse |
-| Flash | `A.flash(tl, e, at, {tone})` | ring burst ("there!") |
+| Flash | `A.flash(tl, e, at, {tone, r})` | ring burst ("there!"); radius capped at 160 px, pass `r` for another |
 | Zoom | `A.zoom(tl, sc.cam, at, {to: ref\|[x,y,w,h]\|null, pad, d})` | camera frames a target; `null` = full frame |
 | Drift | `A.drift(tl, sc.cam, at, {d, scale: 1.04})` | slow push-in from the current view |
-| Terms | `A.terms(tl, eq, [[key, at], ...])` | term-by-term reveal; unlisted parts with the first |
+| Terms | `A.terms(tl, eq, [[key, at], ...])` | term-by-term reveal; unlisted parts with the first. Keys must be term keys of the equation; a wrong key throws |
 | Highlight / underline | `A.highlight(tl, eq.t.k, at, {tone, until})`, `A.underline(...)` | box / line on a term (CSS child, no measuring) |
 | Underbrace | `A.underbrace(tl, eq.t.k, at, {label, tone, until})` | brace under a term with a label |
 | Swap | `A.swap(tl, eq1, eq2, at, {d, map:{k1:k2}})` | matched keys glide (crossing terms arc above/below), the rest fade; tints carry over |
@@ -70,3 +70,5 @@ Tones: `ink dim line faint accent blue green red violet teal`; `S.theme({...})` 
 **Helpers.** `S.cues(start)` scene-local cues · `S.ready(fn)` run the build after fonts load (needed when an eq term is an arrow end, for `A.swap`, and `circle`/`flash` on a term) — register the timeline at the end of `fn` · `S.rng(seed)` mulberry32 · `sc.geo(ref)`, `sc.anchor(ref, where)` → `{p, n}` · `sc.cam` camera group.
 
 **Rules.** Never place arrows by hand; move shapes with `A.move` (a raw `tl.to(shape, {x})` leaves arrows stale, which the checker reports as `arrow_detached`). Draw-on is `pathLength=1` and the dash attribute tween, dashed lines included. Morph/slide/trace/move are keyframed at build: no `onUpdate`, seekable both ways. Equations are measured on an off-screen clone, so they work while a later scene is still hidden; their fonts must be declared in the scene's `<style>` (e.g. `.s-eq{font-family:"EB Garamond"}`) so HyperFrames embeds them. Marks/tangents/areas do not follow a morph: fade them first.
+
+**Moving a composite.** `A.move` scales each element about its own centre, so a circuit or a plot cannot be shrunk or slid as one picture (links and equation labels also do not follow). Build the picture in a group: `const g = document.createElementNS("http://www.w3.org/2000/svg", "g"); sc.cam.appendChild(g);` and pass `parent: g` to every `sc.*` call of that picture. Then tween the group: `tl.to(g, { x, y, scale, svgOrigin: "0 0", duration: 0.8, ease: "power3.inOut" }, t)`. `check_layout.py` measures screen coordinates, so arrows inside stay checked. `A.flash` on a member of a scaled group draws its ring in unscaled coordinates: flash the group, or append the ring to the group.
